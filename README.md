@@ -1,8 +1,8 @@
 # CSS Tree AST Viewer
 
-Focused CSS AST explorer for pasting a stylesheet into a CodeMirror editor and inspecting the parsed `css-tree` structure in a second pane.
+Focused CSS AST explorer Paste or write your CSS in one pane and inspect the parsed `css-tree` structure in a second pane.
 
-This project is intentionally narrow in scope and takes its quality bar, split-pane behavior, and documentation tone from [JSConsole](/Users/schalkneethling/dev/opensource/jsconsole/README.md).
+This project is intentionally narrow in scope and takes its quality bar, split-pane behavior, and documentation tone from [JSConsole](https://jsconsole.schalkneethling.com).
 
 ## What It Does
 
@@ -114,4 +114,4 @@ pnpm build
 
 ## License
 
-No license has been added yet.
+Licensed under the [MIT License](LICENSE).
