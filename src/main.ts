@@ -1,9 +1,11 @@
 import "./style.css";
-import { basicSetup, EditorView } from "codemirror";
+import { autocompletion, closeBrackets, closeBracketsKeymap } from "@codemirror/autocomplete";
+import { history, historyKeymap, defaultKeymap } from "@codemirror/commands";
 import { css as cssLanguage } from "@codemirror/lang-css";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
+import { EditorView, drawSelection, highlightActiveLine, highlightActiveLineGutter, keymap, lineNumbers } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
-import * as csstree from "css-tree";
+import { parse, toPlainObject } from "css-tree";
 
 type PlainNode = Record<string, unknown> & { type: string };
 
@@ -222,7 +224,7 @@ const customTheme = EditorView.theme({
     backgroundColor: "transparent",
   },
   ".cm-selectionBackground, &.cm-focused .cm-selectionBackground, ::selection": {
-    backgroundColor: "rgba(195, 130, 58, 0.35)",
+    backgroundColor: "rgba(112, 132, 118, 0.48) !important",
   },
   "&.cm-focused .cm-cursor": {
     borderLeftColor: "var(--accent-strong)",
@@ -244,7 +246,14 @@ const customHighlightStyle = HighlightStyle.define([
 const editor = new EditorView({
   doc: sampleCss,
   extensions: [
-    basicSetup,
+    lineNumbers(),
+    highlightActiveLineGutter(),
+    drawSelection(),
+    history(),
+    closeBrackets(),
+    autocompletion(),
+    keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap]),
+    highlightActiveLine(),
     cssLanguage(),
     customTheme,
     syntaxHighlighting(customHighlightStyle),
@@ -256,6 +265,13 @@ const editor = new EditorView({
   ],
   parent: editorHost,
 });
+
+editor.contentDOM.setAttribute("spellcheck", "false");
+editor.contentDOM.setAttribute("autocorrect", "off");
+editor.contentDOM.setAttribute("autocapitalize", "off");
+editor.contentDOM.setAttribute("data-gramm", "false");
+editor.contentDOM.setAttribute("data-gramm_editor", "false");
+editor.contentDOM.setAttribute("data-enable-grammarly", "false");
 
 let treeModel: TreeNode | null = null;
 let parseState: ParseState = {
@@ -578,11 +594,11 @@ function parseCss() {
   }
 
   try {
-    const ast = csstree.parse(source, {
+    const ast = parse(source, {
       positions: false,
     });
 
-    const plainAst = csstree.toPlainObject(ast) as PlainNode;
+    const plainAst = toPlainObject(ast) as PlainNode;
     const normalizedTree = normalizeNode(plainAst, "ast-root");
 
     parseState = {
