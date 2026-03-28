@@ -13,6 +13,7 @@
   --accent: #8ab1a0;
   --accent-strong: #c3823a;
   --accent-deep: #294c3d;
+  --editor-kicker: #9fb8ab;
   --tree-pill-bg: #edf2ec;
   --tree-pill-border: rgba(41, 76, 61, 0.16);
   --tree-pill-text: #365548;
@@ -123,7 +124,7 @@ code {
 }
 
 .editor-panel .panel-kicker {
-  color: #9fb8ab;
+  color: var(--editor-kicker);
 }
 
 h2,
