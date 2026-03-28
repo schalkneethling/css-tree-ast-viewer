@@ -5,14 +5,17 @@ import { css as cssLanguage } from "@codemirror/lang-css";
 import { syntaxHighlighting, HighlightStyle } from "@codemirror/language";
 import { EditorView, drawSelection, highlightActiveLine, highlightActiveLineGutter, keymap, lineNumbers } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
-import { parse, toPlainObject } from "css-tree";
+import Specificity from "@bramus/specificity";
+import { parse } from "css-tree";
 
-type PlainNode = Record<string, unknown> & { type: string };
+type AstNode = Record<string, unknown> & { type: string };
+type ListLike = { forEach: (callback: (value: unknown, index: number) => void) => void };
 
 type TreeNode = {
   id: string;
   label: string;
   relation?: string;
+  annotation?: string;
   meta: string[];
   summary?: string;
   children: TreeNode[];
@@ -290,8 +293,12 @@ function slug(value: string) {
   return value.replace(/[^a-z0-9]+/gi, "-").replace(/^-+|-+$/g, "").toLowerCase() || "node";
 }
 
-function isPlainNode(value: unknown): value is PlainNode {
-  return Boolean(value) && typeof value === "object" && !Array.isArray(value) && typeof (value as PlainNode).type === "string";
+function isAstNode(value: unknown): value is AstNode {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value) && typeof (value as AstNode).type === "string";
+}
+
+function isListLike(value: unknown): value is ListLike {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value) && typeof (value as ListLike).forEach === "function";
 }
 
 function isScalar(value: unknown): value is string | number | boolean | null {
@@ -304,7 +311,7 @@ function formatScalar(value: string | number | boolean | null) {
   return String(value);
 }
 
-function metaEntries(node: PlainNode) {
+function metaEntries(node: AstNode) {
   const importantKeys = ["name", "property", "value", "unit", "important", "flags", "id"];
   const preferred = importantKeys
     .filter((key) => key in node)
@@ -327,7 +334,15 @@ function metaEntries(node: PlainNode) {
     .slice(0, 4);
 }
 
-function normalizeNode(node: PlainNode, path: string, relation?: string): TreeNode {
+function getSpecificityAnnotation(node: AstNode) {
+  if (node.type !== "Selector") {
+    return undefined;
+  }
+
+  return Specificity.calculateForAST(node).toArray().join(",");
+}
+
+function normalizeNode(node: AstNode, path: string, relation?: string): TreeNode {
   const children: TreeNode[] = [];
 
   Object.entries(node).forEach(([key, value]) => {
@@ -335,16 +350,29 @@ function normalizeNode(node: PlainNode, path: string, relation?: string): TreeNo
       return;
     }
 
-    if (isPlainNode(value)) {
+    if (isAstNode(value)) {
       children.push(normalizeNode(value, `${path}.${slug(key)}`, key));
       return;
     }
 
     if (Array.isArray(value)) {
       value.forEach((entry, index) => {
-        if (isPlainNode(entry)) {
+        if (isAstNode(entry)) {
           children.push(normalizeNode(entry, `${path}.${slug(key)}-${index}`, key === "children" ? undefined : key));
         }
+      });
+      return;
+    }
+
+    if (isListLike(value)) {
+      let listIndex = 0;
+
+      value.forEach((entry) => {
+        if (isAstNode(entry)) {
+          children.push(normalizeNode(entry, `${path}.${slug(key)}-${listIndex}`, key === "children" ? undefined : key));
+        }
+
+        listIndex += 1;
       });
     }
   });
@@ -356,6 +384,7 @@ function normalizeNode(node: PlainNode, path: string, relation?: string): TreeNo
     id: path,
     label: node.type,
     relation,
+    annotation: getSpecificityAnnotation(node),
     meta,
     summary,
     children,
@@ -494,6 +523,14 @@ function renderTree({ focusActiveItem = false } = {}) {
     label.textContent = node.label;
     title.append(label);
 
+    if (node.annotation) {
+      const annotation = document.createElement("span");
+      annotation.className = "tree-annotation";
+      annotation.textContent = node.annotation;
+      annotation.setAttribute("aria-label", `Specificity ${node.annotation}`);
+      title.append(annotation);
+    }
+
     if (node.summary) {
       const summary = document.createElement("span");
       summary.className = "tree-summary";
@@ -598,8 +635,7 @@ function parseCss() {
       positions: false,
     });
 
-    const plainAst = toPlainObject(ast) as PlainNode;
-    const normalizedTree = normalizeNode(plainAst, "ast-root");
+    const normalizedTree = normalizeNode(ast as AstNode, "ast-root");
 
     parseState = {
       kind: "success",
