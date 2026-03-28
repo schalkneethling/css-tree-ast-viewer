@@ -10,6 +10,7 @@ The app provides two panes:
 
 - A CSS editor powered by CodeMirror 6
 - An accessible AST tree view powered by `css-tree`
+- Selector specificity annotations powered by `@bramus/specificity`
 
 It is designed as a compact browser tool: edit CSS, inspect how it parses, collapse or expand the tree, and keep moving.
 
@@ -31,6 +32,7 @@ For this version, the parser runs on the client, the AST is normalized into a tr
 
 - CodeMirror-based CSS editor with a sample stylesheet loaded by default
 - `css-tree` parsing in the browser with debounced updates
+- Selector specificity badges for selector nodes in the AST explorer
 - Accessible AST tree using the WAI-ARIA APG tree view interaction model
 - Resizable APG-inspired splitter between the editor and tree panes
 - Reset, clear, expand-all, and collapse-all controls
@@ -104,7 +106,8 @@ pnpm build
 
 - The app is intentionally framework-free and uses direct DOM composition with TypeScript.
 - Parsing runs in the browser and is debounced to keep editing responsive.
-- The raw `css-tree` AST is converted into a plain object and then normalized into a tree view model so the accessibility logic is not coupled to parser-specific list objects.
+- Specificity annotations are calculated from the original `css-tree` selector AST via `@bramus/specificity`, so selector badges stay aligned with modern selector rules such as `:is()` and `:not()`.
+- The raw `css-tree` AST is normalized into a tree view model with stable ids so the accessibility logic is not coupled directly to parser-specific list objects.
 - When parsing fails, the tree surface clearly reports the parser error instead of silently failing.
 
 ## Current Limitations
