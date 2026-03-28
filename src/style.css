@@ -3,16 +3,25 @@
 :root {
   --bg: #edf0e8;
   --bg-strong: #e0e6db;
-  --panel: rgba(255, 254, 250, 0.75);
-  --panel-strong: rgba(248, 250, 244, 0.92);
+  --panel: #fcfcf8;
+  --panel-strong: #f7f8f2;
   --panel-border: rgba(34, 42, 38, 0.12);
   --panel-shadow: 0 24px 56px rgba(43, 56, 46, 0.14);
   --text: #1c231f;
-  --text-soft: #5f6c63;
+  --text-soft: #4a5850;
   --text-inverse: #eff5ef;
   --accent: #8ab1a0;
   --accent-strong: #c3823a;
-  --accent-deep: #325847;
+  --accent-deep: #294c3d;
+  --tree-pill-bg: #edf2ec;
+  --tree-pill-border: rgba(41, 76, 61, 0.16);
+  --tree-pill-text: #365548;
+  --tree-selection: #e7f0ea;
+  --tree-focus: rgba(41, 76, 61, 0.08);
+  --tree-connector: rgba(41, 76, 61, 0.16);
+  --specificity-bg: #fbf1e6;
+  --specificity-border: rgba(138, 79, 20, 0.2);
+  --specificity-text: #7a4513;
   --action-warn: #d5d55a;
   --editor-surface: linear-gradient(180deg, rgba(17, 28, 25, 0.99), rgba(24, 35, 31, 0.97));
   --editor-text: #eef5ee;
@@ -146,7 +155,6 @@ p {
   min-block-size: min(24rem, 100%);
   border-radius: var(--radius-xl);
   border: 1px solid var(--panel-border);
-  box-shadow: var(--panel-shadow);
   overflow: hidden;
   backdrop-filter: blur(14px);
 }
@@ -298,7 +306,9 @@ p {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  padding: 0 0 0.85rem;
+  padding-block-start: 0;
+  padding-inline: 0;
+  padding-block-end: 0.85rem;
   overflow: hidden;
 }
 
@@ -306,7 +316,10 @@ p {
   justify-content: space-between;
   align-items: start;
   gap: 0.75rem;
-  padding-right: 1rem;
+  margin-block: 0;
+  margin-inline: 1rem;
+  padding-inline-end: 0;
+  padding-block-end: 0.5rem;
 }
 
 .status-pill {
@@ -320,9 +333,9 @@ p {
 }
 
 .status-success {
-  background: rgba(77, 137, 114, 0.12);
-  border-color: rgba(77, 137, 114, 0.18);
-  color: #245845;
+  background: #e6efe9;
+  border-color: rgba(41, 76, 61, 0.14);
+  color: #225040;
 }
 
 .status-error {
@@ -332,24 +345,29 @@ p {
 }
 
 .status-empty {
-  background: rgba(78, 94, 84, 0.1);
-  border-color: rgba(78, 94, 84, 0.12);
+  background: #ecefe9;
+  border-color: rgba(74, 88, 80, 0.12);
   color: var(--text-soft);
 }
 
 .tree-stats {
+  flex: 1 1 18rem;
+  min-width: 0;
   max-width: 24rem;
   color: var(--text-soft);
   text-align: right;
+  overflow-wrap: anywhere;
 }
 
 .tree-surface {
   flex: 1 1 auto;
-  margin: 0 1rem;
-  padding: 0.5rem;
+  margin-block: 0;
+  margin-inline: 1rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.5rem;
   border-radius: calc(var(--radius-xl) - 8px);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.48), rgba(255, 255, 255, 0.18)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.68)),
     var(--panel-strong);
   border: 1px solid rgba(34, 42, 38, 0.08);
   overflow: auto;
@@ -401,7 +419,7 @@ p {
   inset: 0.2rem 0;
   inset-inline-start: calc(0.75rem + var(--tree-depth) * 1.05rem);
   inline-size: 1px;
-  background: rgba(50, 88, 71, 0.12);
+  background: var(--tree-connector);
 }
 
 .tree-expander {
@@ -410,7 +428,7 @@ p {
   block-size: 1rem;
   margin-top: 0.2rem;
   border-radius: 0.3rem;
-  background: rgba(50, 88, 71, 0.08);
+  background: var(--tree-pill-bg);
 }
 
 .tree-expander::before {
@@ -456,8 +474,9 @@ p {
 .tree-relation {
   padding: 0.18rem 0.45rem;
   border-radius: 999px;
-  background: rgba(50, 88, 71, 0.08);
-  color: var(--accent-deep);
+  background: var(--tree-pill-bg);
+  border: 1px solid var(--tree-pill-border);
+  color: var(--tree-pill-text);
   font-family: var(--mono);
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -467,6 +486,18 @@ p {
 .tree-label {
   font-weight: 700;
   letter-spacing: -0.01em;
+}
+
+.tree-annotation {
+  padding: 0.16rem 0.48rem;
+  border-radius: 999px;
+  border: 1px solid var(--specificity-border);
+  background: var(--specificity-bg);
+  color: var(--specificity-text);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .tree-summary {
@@ -484,8 +515,8 @@ p {
   max-width: 100%;
   padding: 0.15rem 0.45rem;
   border-radius: 999px;
-  border: 1px solid rgba(50, 88, 71, 0.1);
-  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--tree-pill-border);
+  background: #fbfcf8;
   color: var(--text-soft);
   font-family: var(--mono);
   font-size: 0.73rem;
@@ -495,14 +526,14 @@ p {
 }
 
 .tree-item[aria-selected="true"] > .tree-row {
-  background: rgba(138, 177, 160, 0.16);
+  background: var(--tree-selection);
 }
 
 .tree-item:focus-visible > .tree-row {
   box-shadow:
-    inset 0 0 0 1px rgba(50, 88, 71, 0.26),
-    0 0 0 3px rgba(50, 88, 71, 0.16);
-  background: rgba(50, 88, 71, 0.07);
+    inset 0 0 0 1px rgba(41, 76, 61, 0.3),
+    0 0 0 3px rgba(41, 76, 61, 0.16);
+  background: var(--tree-focus);
 }
 
 .splitter {
